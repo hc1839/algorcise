@@ -1,233 +1,249 @@
-using System;
+namespace Hc1839.Algorcise.Sorting;
 
-namespace Hc1839
+public class ArrayOperations
 {
-    namespace Algorcise
+    private static void InsertSort(
+        IComparable[] sourceArray,
+        int loLim,
+        int hiLim
+    )
     {
-        namespace Sorting
+        IComparable[] a = sourceArray;
+
+        for (int rp = loLim + 1; rp <= hiLim; rp++)
         {
-            public class DictionaryEntryClass : IComparable
+            // Temporary variable for comparing elements.
+            IComparable rt = a[rp];
+            // Left "pointer".
+            int lp = rp - 1;
+
+            while (true)
             {
-                private readonly object objKey;
-                private readonly object objValue;
+                // Temporary variable for comparing elements.
+                IComparable lt = a[lp];
 
-                public DictionaryEntryClass(object Key, object Value)
+                if (rt.CompareTo(lt) < 0)
                 {
-                    objKey = Key;
-                    objValue = Value;
-                }
-
-                public object Key
-                {
-                    get
-                    {
-                        return this.objKey;
-                    }
-                }
-
-                public object Value
-                {
-                    get
-                    {
-                        return this.objValue;
-                    }
-                }
-
-                public int CompareTo(object obj)
-                {
-                    IComparable A = (IComparable) this.objValue;    // Value property of this object.
-                    object B;    // Argument for CompareTo method of object A.
-
-                    if (obj is DictionaryEntryClass)
-                    {
-                        B = ((DictionaryEntryClass) obj).Value;
+                    a[lp + 1] = a[lp];
+                    if (lp > loLim) {
+                        lp--;
                     }
                     else
                     {
-                        B = obj;
+                        break;
                     }
-
-                    return A.CompareTo(B);
+                }
+                else
+                {
+                    lp++;
+                    break;
                 }
             }
 
-            public class ArrayOperations
+            a[lp] = rt;
+        }
+    }
+
+    public static void MergeSort(
+        Array sourceArray,
+        int loLim,
+        int hiLim,
+        int insertSortSize = 16
+    )
+    {
+        if (insertSortSize < 2)
+        {
+            throw new ArgumentException(
+                "Size of sub-array for insert sort is not at least 2."
+            );
+        }
+
+        // Number of elements to sort.
+        int length = hiLim - loLim + 1;
+
+        // Cast sourceArray elements into array a.
+        IComparable[] a =
+            (IComparable[]) Array.CreateInstance(typeof(IComparable), length);
+
+        for (int i = 0; i <= length - 1; i++)
+        {
+            a[i] = (IComparable) sourceArray.GetValue(i + loLim);
+        }
+
+        // InsertSort sub-arrays of insertSortSize elements.
+        for (int i = 0; i <= length - 1; i += insertSortSize)
+        {
+            InsertSort(
+                a,
+                i,
+                Math.Min(i + insertSortSize - 1, length - 1)
+            );
+        }
+
+        // Stagger the sub-arrays. This allows the merging to be shuttled.
+        IComparable[] b = (IComparable[])
+            Array.CreateInstance(typeof(IComparable), length);
+
+        for (
+            int i = 2 * insertSortSize;
+            i <= length - 1;
+            i += 2 * insertSortSize
+        )
+        {
+            for (
+                int j = i;
+                j <= Math.Min(i + insertSortSize - 1, length - 1);
+                j++
+            )
             {
-                private static void InsertSort(IComparable[] SourceArray, int LoLim, int HiLim)
+                b[j] = a[j];
+            }
+        }
+
+        // Merge the sub-arrays.
+        for (int i = insertSortSize; i <= length - 1; i += insertSortSize)
+        {
+            // Left "pointer".
+            int lp = 0;
+            // Right "pointer".
+            int rp = i;
+            // Output "pointer".
+            int op = 0;
+
+            while (lp < i & rp < Math.Min(i + insertSortSize, length))
+            {
+                // Temporary variables for comparing elements.
+                IComparable lt = a[lp];
+                IComparable rt = a[rp];
+
+                if (rt.CompareTo(lt) < 0)
                 {
-                    IComparable[] A = SourceArray;
-                    int L = LoLim;    // Left limit.
-                    int R = HiLim;    // Right limit.
-                    int LP;    // Left "pointer".
-                    int RP;    // Right "pointer".
-                    IComparable LT; IComparable RT;    // Temporary variables for comparing elements.
-
-                    for (RP = L + 1; RP <= R; RP++)
-                    {
-                        RT = A[RP];
-
-                        LP = RP - 1;
-                        while (true)
-                        {
-                            LT = A[LP];
-                            if (RT.CompareTo(LT) < 0)
-                            {
-                                A[LP + 1] = A[LP];
-                                if (LP > L) LP--; else break;
-                            }
-                            else
-                            {
-                                LP++;
-                                break;
-                            }
-                        }
-
-                        A[LP] = RT;
-                    }
+                    b[op] = rt;
+                    rp++;
+                }
+                else
+                {
+                    b[op] = lt;
+                    lp++;
                 }
 
-                public static void MergeSort(Array SourceArray, int LoLim, int HiLim)
+                op++;
+            }
+
+            // Either the left or right pointer has ran out its sub-array.
+            // Transfer the rest of the remaining sub-array.
+            {
+                int j = (lp >= i ? rp : lp);
+                int k;
+
+                if (lp >= i)
                 {
-                    const int N = 16;    // Arbitrary maximum number of elements for InsertSort.
-                    int LP;    // Left "pointer".
-                    int RP;    // Right "pointer".
-                    int OP;    // Output "pointer".
-                    int Length = HiLim - LoLim + 1;    // Number of elements to sort.
-                    IComparable LT; IComparable RT;    // Temporary variables for comparing elements.
-                    IComparable[] A;    // Source array.
-                    IComparable[] B;    // Buffer array.
-                    IComparable[] C;    // Temporary variable for switching source and buffer arrays.
-
-                    // Cast SourceArray elements into array A.
-                    A = (IComparable[]) Array.CreateInstance(typeof(IComparable), Length);
-                    for (int I = 0; I <= Length - 1; I++)
-                    {
-                        A[I] = (IComparable) SourceArray.GetValue(I + LoLim);
-                    }
-
-                    // InsertSort sub-arrays of N elements.
-                    for (int I = 0; I <= Length - 1; I += N)
-                    {
-                        ArrayOperations.InsertSort(A, I, Math.Min(I + N - 1, Length - 1));
-                    }
-
-                    // Stagger the sub-arrays. This allows the merging to be shuttled.
-                    B = (IComparable[]) Array.CreateInstance(typeof(IComparable), Length);
-                    for (int I = 2*N; I <= Length - 1; I += 2*N)
-                    {
-                        for (int J = I; J <= Math.Min(I + N - 1, Length - 1); J++)
-                        {
-                            B[J] = A[J];
-                        }
-                    }
-
-                    // Merge the sub-arrays.
-                    for (int I = N; I <= Length - 1; I += N)
-                    {
-                        LP = 0; RP = I; OP = 0;
-                        while (LP < I & RP < Math.Min(I + N, Length))
-                        {
-                            LT = A[LP]; RT = A[RP];
-                            if (RT.CompareTo(LT) < 0)
-                            {
-                                B[OP] = RT;
-                                RP++;
-                            }
-                            else
-                            {
-                                B[OP] = LT;
-                                LP++;
-                            }
-                            OP++;
-                        }
-
-                        // Either the left or right pointer has ran out its sub-array.
-                        // Transfer the rest of the remaining sub-array.
-                        {
-                            int J = (LP >= I ? RP : LP);
-                            int K = (LP >= I ? Math.Min(I + N - 1, Length - 1) : I - 1);
-                            for (; J <= K; J++)
-                            {
-                                B[OP] = A[J];
-                                OP++;
-                            }
-                        }
-
-                        // Switch source and buffer arrays.
-                        C = A;
-                        A = B;
-                        B = C;
-                    }
-
-                    // Put elements of array A back into SourceArray.
-                    for (int I = 0; I <= Length - 1; I++)
-                    {
-                        SourceArray.SetValue(A[I], I + LoLim);
-                    }
+                    k = Math.Min(i + insertSortSize - 1, length - 1);
+                }
+                else
+                {
+                    k = i - 1;
                 }
 
-                public static void MatrixMergeSort(Array Matrix, int LoRowIndex, int HiRowIndex)
+                for (; j <= k; j++)
                 {
-                    object[] A;    // One-dimensional representation of Matrix.
-                    DictionaryEntryClass[] B;    // Buffer array for MergeSort.
-                    int[] C;    // Array of indices.
-                    int nRows = HiRowIndex - LoRowIndex + 1;    // Number of rows to sort.
-                    int OP;    // Output "pointer" for array A.
-
-                    // Create a one-dimensional representation of Matrix.
-                    A = new object[(Matrix.GetUpperBound(1) - Matrix.GetLowerBound(1) + 1) * nRows];
-                    OP = 0;
-                    for (int J = Matrix.GetLowerBound(1); J <= Matrix.GetUpperBound(1); J++)
-                    {
-                        for (int I = LoRowIndex; I <= HiRowIndex; I++)
-                        {
-                            A[OP] = Matrix.GetValue(I, J);
-                            OP++;
-                        }
-                    }
-
-                    // Prepare the buffer array.
-                    B = new DictionaryEntryClass[nRows];
-                    for (int I = 0; I <= nRows - 1; I++)
-                    {
-                        B[I] = new DictionaryEntryClass((int) (I + A.GetUpperBound(0) + 1), null);
-                    }
-
-                    // MergeSort individual columns from right to left.
-                    while (((int) (B[0].Key)) >= nRows)
-                    {
-                        int TMP;
-                        for (int I = 0; I <= nRows - 1; I++)
-                        {
-                            TMP = (int) B[I].Key; TMP -= nRows;
-                            B[I] = new DictionaryEntryClass(TMP, A[TMP]);
-                        }
-
-                        ArrayOperations.MergeSort(B, 0, nRows - 1);
-                    }
-
-                    // Create array C from array B.
-                    C = new int[nRows];
-                    for (int I = 0; I <= nRows - 1; I++)
-                    {
-                        C[I] = (int) B[I].Key;
-                    }
-                    B = null;
-
-                    // Put elements of array A back into Matrix via array C.
-                    {
-                        int TMP = 0;    // Index shifting.
-                        for (int J = Matrix.GetLowerBound(1); J <= Matrix.GetUpperBound(1); J++)
-                        {
-                            for (int I = LoRowIndex; I <= HiRowIndex; I++)
-                            {
-                                Matrix.SetValue(A[C[I - LoRowIndex] + TMP], I, J);
-                            }
-
-                            TMP += nRows;
-                        }
-                    }
+                    b[op] = a[j];
+                    op++;
                 }
+            }
+
+            // Switch source and buffer arrays.
+            IComparable[] c = a;
+            a = b;
+            b = c;
+        }
+
+        // Put elements of array a back into sourceArray.
+        for (int i = 0; i <= length - 1; i++)
+        {
+            sourceArray.SetValue(a[i], i + loLim);
+        }
+    }
+
+    public static void MatrixMergeSort(
+        Array matrix,
+        int loRowIndex,
+        int hiRowIndex
+    )
+    {
+        // Number of rows to sort.
+        int nRows = hiRowIndex - loRowIndex + 1;
+
+        // Create a one-dimensional representation of matrix.
+        var a = new object[
+            (matrix.GetUpperBound(1) - matrix.GetLowerBound(1) + 1) * nRows
+        ];
+        // Output "pointer" for array a.
+        int op = 0;
+
+        for (
+            int j = matrix.GetLowerBound(1);
+            j <= matrix.GetUpperBound(1);
+            j++
+        )
+        {
+            for (int i = loRowIndex; i <= hiRowIndex; i++)
+            {
+                a[op] = matrix.GetValue(i, j);
+                op++;
+            }
+        }
+
+        // Prepare the buffer array.
+        var b = new DictionaryEntryClass[nRows];
+
+        for (int i = 0; i <= nRows - 1; i++)
+        {
+            b[i] = new DictionaryEntryClass(
+                (int) (i + a.GetUpperBound(0) + 1),
+                null
+            );
+        }
+
+        // MergeSort individual columns from right to left.
+        while (((int) (b[0].Key)) >= nRows)
+        {
+            for (int i = 0; i <= nRows - 1; i++)
+            {
+                int tmp = (int) b[i].Key - nRows;
+                b[i] = new DictionaryEntryClass(tmp, a[tmp]);
+            }
+
+            MergeSort(b, 0, nRows - 1);
+        }
+
+        // Create array c from array b.
+        var c = new int[nRows];
+
+        for (int i = 0; i <= nRows - 1; i++)
+        {
+            c[i] = (int) b[i].Key;
+        }
+
+        b = null;
+
+        // Put elements of array a back into matrix via array c.
+        {
+            for (
+                int j = matrix.GetLowerBound(1);
+                j <= matrix.GetUpperBound(1);
+                j++
+            )
+            {
+                // Index shifting.
+                int tmp = 0;
+
+                for (int i = loRowIndex; i <= hiRowIndex; i++)
+                {
+                    matrix.SetValue(a[c[i - loRowIndex] + tmp], i, j);
+                }
+
+                tmp += nRows;
             }
         }
     }
