@@ -1,11 +1,14 @@
+using System.Collections;
+
 namespace Hc1839.Algorcise.Sorting;
 
 public class ArrayOperations
 {
-    private static void InsertSort(
+    public static void InsertSort(
         IComparable[] sourceArray,
         int loLim,
-        int hiLim
+        int hiLim,
+        Comparison<object> comparison
     )
     {
         IComparable[] a = sourceArray;
@@ -22,7 +25,7 @@ public class ArrayOperations
                 // Temporary variable for comparing elements.
                 IComparable lt = a[lp];
 
-                if (rt.CompareTo(lt) < 0)
+                if (comparison(rt, lt) < 0)
                 {
                     a[lp + 1] = a[lp];
                     if (lp > loLim) {
@@ -48,6 +51,7 @@ public class ArrayOperations
         Array sourceArray,
         int loLim,
         int hiLim,
+        Comparison<object> comparison,
         int insertSortSize = 16
     )
     {
@@ -76,7 +80,8 @@ public class ArrayOperations
             InsertSort(
                 a,
                 i,
-                Math.Min(i + insertSortSize - 1, length - 1)
+                Math.Min(i + insertSortSize - 1, length - 1),
+                comparison
             );
         }
 
@@ -116,7 +121,7 @@ public class ArrayOperations
                 IComparable lt = a[lp];
                 IComparable rt = a[rp];
 
-                if (rt.CompareTo(lt) < 0)
+                if (comparison(rt, lt) < 0)
                 {
                     b[op] = rt;
                     rp++;
@@ -168,7 +173,8 @@ public class ArrayOperations
     public static void MatrixMergeSort(
         Array matrix,
         int loRowIndex,
-        int hiRowIndex
+        int hiRowIndex,
+        Comparison<object> comparison
     )
     {
         // Number of rows to sort.
@@ -195,11 +201,11 @@ public class ArrayOperations
         }
 
         // Prepare the buffer array.
-        var b = new DictionaryEntryClass[nRows];
+        var b = new DictionaryEntry[nRows];
 
         for (int i = 0; i <= nRows - 1; i++)
         {
-            b[i] = new DictionaryEntryClass(
+            b[i] = new DictionaryEntry(
                 (int) (i + a.GetUpperBound(0) + 1),
                 null
             );
@@ -211,10 +217,21 @@ public class ArrayOperations
             for (int i = 0; i <= nRows - 1; i++)
             {
                 int tmp = (int) b[i].Key - nRows;
-                b[i] = new DictionaryEntryClass(tmp, a[tmp]);
+                b[i] = new DictionaryEntry(tmp, a[tmp]);
             }
 
-            MergeSort(b, 0, nRows - 1);
+            MergeSort(
+                b,
+                0,
+                nRows - 1,
+                (x, y) =>
+                {
+                    return comparison(
+                        ((DictionaryEntry) x).Value,
+                        ((DictionaryEntry) y).Value
+                    );
+                }
+            );
         }
 
         // Create array c from array b.
