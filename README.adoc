@@ -1,0 +1,31 @@
+= Algorcise
+:nofooter:
+
+Algorcise (portmanteau of "algorithm" and "exercise") is a place for practicing
+algorithm implementations. Currently, only one algorithm, matrix merge sort, is
+implemented.
+
+Matrix merge sort is an algorithm that utilizes merge sort and its stability in
+sorting the elements of each column from right column to left column. This
+results in the matrix having its rows sorted in descending priority from left
+column to right column. Matrix merge sort was devised in 2004 and first
+implemented in C# in 2007 without generics. The implementation of matrix merge
+sort was updated in 2023 to take advantage of generics and .NET 8 without
+altering the original algorithm. The project has also been updated to use Cake
+as the build system. Documentation comments and tests will be written in the
+near future.
+
+== Building
+
+Build as a library with
+
+----
+dotnet cake
+----
+
+If the project has been built before, add the `--rebuild` option to ensure the
+build directory is cleaned before building:
+
+----
+dotnet cake --rebuild
+----
